@@ -140,4 +140,4 @@ We are grateful to the original authors and contributors for designing the seque
 
 ## License
 
-This project is licensed under the **Apache License, Version 2.0** ([Apache-2.0](http://www.apache.org/licenses/LICENSE-2.0)). See the `LICENSE` and `NOTICE` files for full details.
+This project is licensed under the **Apache License, Version 2.0** ([Apache-2.0](http://www.apache.org/licenses/LICENSE-2.0)). See the `LICENSE` file for full details.
