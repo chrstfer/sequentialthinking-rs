@@ -84,4 +84,8 @@ target/
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
+
+# ignoring local .cargo config which adds sccache (
+.cargo
+
 # End of https://www.toptal.com/developers/gitignore/api/emacs,deno,rust
