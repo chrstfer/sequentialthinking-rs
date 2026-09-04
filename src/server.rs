@@ -24,9 +24,12 @@ impl Default for SequentialThinkingServer {
     }
 }
 
+
+// TODO: this version number should be set by the Cargo.toml value, not hardcoded.
+// Similarly, name should be set from an as-yet unimplemented (planned) configuration file. It should default to sequentialthinking but if a user has a specific need or want to change it, we should not hamstring them.
 #[tool_handler(
     router = self.tool_router,
-    name = "sequential-thinking-server",
+    name = "sequentialthinking-rs-srv",
     version = "0.1.0",
     instructions = "Sequential Thinking Server enables dynamic, reflective, and non-linear step-by-step problem-solving. Use the `sequentialthinking` tool to break down complex tasks, plan iteratively, verify hypotheses, revise prior deductions, and branch into alternative exploration paths before finalizing conclusions."
 )]

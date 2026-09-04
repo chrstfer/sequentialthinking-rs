@@ -40,25 +40,20 @@ fn nullable_u32_min1_schema(
 #[serde(rename_all = "camelCase")]
 #[schemars(deny_unknown_fields)]
 pub struct SequentialThinkingInput {
-    /// Your current thinking step. This contains the substantive analysis,
-    /// reasoning, hypothesis generation, verification, or reflection for this step.
+    /// Your current thinking step. This contains the substantive analysis, reasoning, hypothesis generation, verification, or reflection for this step.
     #[serde(alias = "thought")]
     pub thought: String,
 
-    /// Whether another thought step is required after this one.
-    /// Set to `true` to continue reasoning, or `false` only when the problem is fully
-    /// resolved and a final satisfactory conclusion is reached.
+    /// Whether another thought step is required after this one. Set to `true` to continue reasoning, or `false` only when the problem is fully resolved and a final satisfactory conclusion is reached.
     #[serde(alias = "next_thought_needed")]
     pub next_thought_needed: bool,
 
-    /// Current thought number in sequence (1-based integer, e.g. 1, 2, 3).
-    /// Can extend beyond the initial total estimate if additional thinking is needed.
+    /// Current thought number in sequence (1-based integer, e.g. 1, 2, 3). Can extend beyond the initial total estimate if additional thinking is needed.
     #[serde(alias = "thought_number")]
     #[schemars(range(min = 1))]
     pub thought_number: u32,
 
-    /// Current estimated total number of thoughts required (integer >= 1).
-    /// Can be dynamically adjusted up or down as understanding deepens.
+    /// Current estimated total number of thoughts required (integer >= 1). Can be dynamically adjusted up or down as understanding deepens.
     #[serde(alias = "total_thoughts")]
     #[schemars(range(min = 1))]
     pub total_thoughts: u32,
