@@ -1,7 +1,6 @@
 # Created by https://www.toptal.com/developers/gitignore/api/emacs,deno,rust
 # Edit at https://www.toptal.com/developers/gitignore?templates=emacs,deno,rust
 
-.agents/
 /target
 
 ### Deno ###
