@@ -1,0 +1,138 @@
+#+TITLE: Writing for Agents: MCP Server Documentation Audit & Proposal
+#+DATE: 2026-09-04
+#+AUTHOR: Antigravity
+
+* Overview
+
+Under the =/writing-for-agents= framework, documentation presented through an MCP server constitutes *always-loaded context load*. Every description on tools, parameters, and server instructions sits inside the calling agent's context window on *every turn*, competing for attention and spending tokens whether invoked or not.
+
+* Context Load Diagnosis
+
+In [[file:../src/server.rs][src/server.rs]] and [[file:../src/model.rs][src/model.rs]], the agent-facing metadata currently totals ~421 words (~580 tokens).
+
+** Identified Failure Modes
+
+1. *Pervasive No-Ops*:
+   Sections like /"When to use this tool: Decomposing complex problems into manageable steps... Filtering noise and focusing on relevant facts"/ restate baseline capabilities modern LLMs already possess by default.
+
+2. *Three-fold Duplication*:
+   Capabilities are listed in prose (/"When to use this tool"/), re-listed as bullets (/"Key capabilities"/), repeated as imperatives (/"Guidelines for the model"/), and then repeated a fourth time in individual parameter descriptions.
+
+3. *Restating Schema Constraints*:
+   Explaining that =thought_number= is a /"1-based integer, e.g. 1, 2, 3"/ or =is_revision= is /"Optional (defaults to false)"/ duplicates constraints the JSON Schema (=minimum: 1=, =default: false=, types) already declares unambiguously.
+
+4. *Vocabulary Drift*:
+   Current descriptions use forbidden synonyms from [[file:../CONTEXT.org][CONTEXT.org]] (e.g., repeatedly calling thoughts /"steps"/).
+
+* Proposed Rewrites (Side-by-Side)
+
+** A. Server Instructions (=src/server.rs:34=)
+
+Injected into client system prompts / MCP server declarations.
+
+| Metric | Before | Proposed |
+|--------+--------+----------|
+| Content | =Sequential Thinking Server enables dynamic, reflective, and non-linear step-by-step problem-solving. Use the sequentialthinking tool to break down complex tasks, plan iteratively, verify hypotheses, revise prior deductions, and branch into alternative exploration paths before finalizing conclusions.= | =Sequential Thinking Server: provides the sequentialthinking tool for iterative, non-linear reasoning with branching and revisions.= |
+| Word Count | 43 words (~55 tokens) | 16 words (~21 tokens) |
+| Gain | Baseline | 63% reduction |
+
+*** Why it works
+- Front-loads leading words: /iterative/, /non-linear/, /branching/, /revisions/.
+- Retains "Sequential Thinking Server" to preserve compatibility with protocol test assertions.
+- Eliminates tautological fluff ("enables dynamic, reflective, and non-linear step-by-step problem-solving").
+
+** B. Tool Description (=src/server.rs:66-89=)
+
+Loaded into the agent's tool catalog on every interaction.
+
+*** Before (225 words / ~310 tokens)
+
+#+BEGIN_SRC markdown
+A detailed tool for dynamic and reflective problem-solving through sequential thoughts.
+This tool helps analyze problems through an adaptable thinking process that evolves as understanding deepens. Each thought can build on, question, revise, or branch from previous insights.
+
+### When to use this tool:
+- Decomposing complex problems into manageable steps
+- Planning and architecture design with room for iteration and revision
+- Exploratory analysis that may require course correction or backtracking
+- Multi-step reasoning where the full scope is not initially clear
+- Maintaining structured reasoning context across multiple steps
+- Filtering noise and focusing on relevant facts per analytical step
+
+### Key capabilities:
+- Dynamic thought estimates: `totalThoughts` can be adjusted up or down as you progress
+- Revisions: previous thoughts can be questioned, corrected, or refined with `isRevision` and `revisesThought`
+- Branching: alternative approaches or hypotheses can be explored in parallel with `branchFromThought` and `branchId`
+- Expansion: extra thoughts can be added even after reaching the initial estimate using `needsMoreThoughts`
+- Verification: hypotheses can be generated and systematically verified step-by-step
+
+### Guidelines for the model:
+1. Start with an initial estimate of `totalThoughts`, but adjust it whenever needed.
+2. Formulate explicit hypotheses and verify them in subsequent thoughts.
+3. If an earlier deduction was flawed, use `isRevision: true` and specify `revisesThought`.
+4. If exploring alternative paths, specify `branchFromThought` and a descriptive `branchId`.
+5. Only set `nextThoughtNeeded: false` when the solution is complete, verified, and satisfactory.
+#+END_SRC
+
+*** Proposed (41 words / ~55 tokens -- 82% reduction)
+
+#+BEGIN_SRC markdown
+Step-by-step reasoning engine supporting revisions and branching exploration.
+
+Record one thought per call. Thoughts can revise previous thoughts (`isRevision: true`, `revisesThought`) or branch into alternative exploration paths (`branchFromThought`, `branchId`). Set `nextThoughtNeeded: false` when the problem is resolved.
+#+END_SRC
+
+*** Why it works
+- *Leading words*: Anchors immediately to /revisions/, /branching exploration/, and /course-correction/.
+- *Direct completion criterion*: /"Set =nextThoughtNeeded: false= when the problem is resolved."/
+- *Inline mapping*: Parameter names are referenced concisely in context without duplicating their descriptions.
+
+** C. Tool Parameters Schema (=src/model.rs:43-89=)
+
+Exported via =schemars= into JSON Schema property descriptions.
+
+| Field | Before (Current) | Proposed (Pruned & Direct) |
+|-------+------------------+----------------------------|
+| =thought= | Your current thinking step. This contains the substantive analysis, reasoning, hypothesis generation, verification, or reflection for this step. | The reasoning, analysis, or deduction for this thought. |
+| =next_thought_needed= | Whether another thought step is required after this one. Set to true to continue reasoning, or false only when the problem is fully resolved and a final satisfactory conclusion is reached. | True to continue reasoning; false when concluded. |
+| =thought_number= | Current thought number in sequence (1-based integer, e.g. 1, 2, 3). Can extend beyond the initial total estimate if additional thinking is needed. | 1-based position of this thought in sequence. |
+| =total_thoughts= | Current estimated total number of thoughts required (integer >= 1). Can be dynamically adjusted up or down as understanding deepens. | Estimated total thoughts needed (adjust dynamically as understanding deepens). |
+| =is_revision= | Whether this thought revises, questions, or corrects previous thinking steps. Optional (defaults to false). | True if this thought revises an earlier thought. |
+| =revises_thought= | When isRevision is true, the specific 1-based thought number being reconsidered or amended. Optional. | 1-based thought number being revised (required if isRevision is true). |
+| =branch_from_thought= | When exploring an alternative hypothesis or branch, the 1-based thought number that serves as the branching origin point. Optional. | 1-based thought number serving as the branch origin. |
+| =branch_id= | A descriptive identifier or label for the branch being created or continued (e.g. 'approach-b', 'alt-hypothesis'). Optional. | Branch identifier (e.g. 'alt-hypothesis'). Required when branching. |
+| =needs_more_thoughts= | Set to true if you reached what seemed like the end of the planned sequence but realize further thought steps are needed. Optional. | True if additional thoughts are needed beyond the initial estimate. |
+
+Parameter Token Reduction: 153 words (~210 tokens) \rightarrow 75 words (~100 tokens) (*51% reduction*).
+
+** D. Response Struct (=src/model.rs:95-116=)
+
+| Field | Before | Proposed |
+|-------+--------+----------|
+| =thought_number= | The thought number that was just processed and recorded in sequence. | Recorded thought number. |
+| =total_thoughts= | The updated estimate of total thoughts needed for this problem. | Current total thoughts estimate. |
+| =next_thought_needed= | Echoes whether another thought step is expected before completing. | Whether further thinking is expected. |
+| =branches= | List of all active branch identifiers created during this thinking session. | Active branch identifiers in this session. |
+| =thought_history_length= | Total number of thoughts recorded in the current session history. | Total thoughts recorded in session history. |
+| =total_thoughts_adjusted= | True if totalThoughts was automatically adjusted to match thoughtNumber. | True if totalThoughts was auto-expanded to match thoughtNumber. |
+| =replaced_existing= | True if this call replaced/updated an existing recorded thought at this thoughtNumber. | True if an existing thought was updated in-place. |
+
+* Summary of Gains
+
+| Artifact | Current Words | Proposed Words | Reduction |
+|----------+---------------+----------------+-----------|
+| Server Instructions | 43 | 16 | *-63%* |
+| Tool Description | 225 | 41 | *-82%* |
+| Parameter Descriptions | 153 | 75 | *-51%* |
+| Response Fields | 83 | 48 | *-42%* |
+| *Total Always-Loaded Load* | *~504 words (~680 tok)* | *~180 words (~240 tok)* | *~64% reduction* |
+
+** Test Impact
+
+Existing protocol test =test_server_info_and_instructions= in [[file:../tests/protocol_tests.rs][tests/protocol_tests.rs]] asserts:
+#+BEGIN_SRC rust
+assert!(instructions.contains("Sequential Thinking Server"));
+assert!(instructions.contains("sequentialthinking"));
+#+END_SRC
+
+By retaining ="Sequential Thinking Server"= in the rewritten instruction (e.g., ="Sequential Thinking Server: provides the sequentialthinking tool for iterative, non-linear reasoning with branching and revisions."=), tests continue to pass with zero test regressions.

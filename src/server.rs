@@ -24,14 +24,11 @@ impl Default for SequentialThinkingServer {
     }
 }
 
-
-// TODO: this version number should be set by the Cargo.toml value, not hardcoded.
-// Similarly, name should be set from an as-yet unimplemented (planned) configuration file. It should default to sequentialthinking but if a user has a specific need or want to change it, we should not hamstring them.
 #[tool_handler(
     router = self.tool_router,
-    name = "sequentialthinking-rs-srv",
+    name = "sequentialthinking",
     version = "0.1.0",
-    instructions = "Sequential Thinking Server enables dynamic, reflective, and non-linear step-by-step problem-solving. Use the `sequentialthinking` tool to break down complex tasks, plan iteratively, verify hypotheses, revise prior deductions, and branch into alternative exploration paths before finalizing conclusions."
+    instructions = "Sequential Thinking Server: provides the sequentialthinking tool for iterative, non-linear reasoning with branching and revisions."
 )]
 impl ServerHandler for SequentialThinkingServer {}
 
@@ -45,7 +42,7 @@ impl SequentialThinkingServer {
         }
     }
 
-    /// Create a new instance with a custom state (e.g. for testing).
+    /// Create a new instance with a custom state (e.g. for testing with custom sinks).
     pub fn with_state(state: SequentialThinkingState) -> Self {
         Self {
             state: Arc::new(Mutex::new(state)),
@@ -58,44 +55,8 @@ impl SequentialThinkingServer {
         Arc::clone(&self.state)
     }
 
-    /// A detailed tool for dynamic and reflective problem-solving through sequential thoughts.
-    /// This tool helps analyze problems through an adaptable thinking process that evolves as understanding deepens.
-    /// Each thought can build on, question, revise, or branch from previous insights.
-    #[tool(
-        name = "sequentialthinking",
-        description = r#"A detailed tool for dynamic and reflective problem-solving through sequential thoughts.
-This tool helps analyze problems through an adaptable thinking process that evolves as understanding deepens. Each thought can build on, question, revise, or branch from previous insights.
-
-### When to use this tool:
-- Decomposing complex problems into manageable steps
-- Planning and architecture design with room for iteration and revision
-- Exploratory analysis that may require course correction or backtracking
-- Multi-step reasoning where the full scope is not initially clear
-- Maintaining structured reasoning context across multiple steps
-- Filtering noise and focusing on relevant facts per analytical step
-
-### Key capabilities:
-- Dynamic thought estimates: `totalThoughts` can be adjusted up or down as you progress
-- Revisions: previous thoughts can be questioned, corrected, or refined with `isRevision` and `revisesThought`
-- Branching: alternative approaches or hypotheses can be explored in parallel with `branchFromThought` and `branchId`
-- Expansion: extra thoughts can be added even after reaching the initial estimate using `needsMoreThoughts`
-- Verification: hypotheses can be generated and systematically verified step-by-step
-
-### Guidelines for the model:
-1. Start with an initial estimate of `totalThoughts`, but adjust it whenever needed.
-2. Formulate explicit hypotheses and verify them in subsequent thoughts.
-3. If an earlier deduction was flawed, use `isRevision: true` and specify `revisesThought`.
-4. If exploring alternative paths, specify `branchFromThought` and a descriptive `branchId`.
-5. Only set `nextThoughtNeeded: false` when the solution is complete, verified, and satisfactory."#,
-        annotations(
-            title = "Sequential Thinking",
-            read_only_hint = false,
-            destructive_hint = false,
-            idempotent_hint = true,
-            open_world_hint = false
-        )
-    )]
-    pub async fn sequentialthinking(
+    /// Internal helper to execute thought processing and format results.
+    async fn process_thought_impl(
         &self,
         params: Parameters<SequentialThinkingInput>,
     ) -> Result<CallToolResult, rmcp::ErrorData> {
@@ -111,5 +72,44 @@ This tool helps analyze problems through an adaptable thinking process that evol
             }
         }
     }
-}
 
+    /// Step-by-step reasoning engine supporting revisions and branching exploration.
+    #[tool(
+        name = "sequentialthinking",
+        description = r#"Step-by-step reasoning engine supporting revisions and branching exploration.
+
+Record one thought per call. Thoughts can revise previous thoughts (`isRevision: true`, `revisesThought`) or branch into alternative exploration paths (`branchFromThought`, `branchId`). Set `nextThoughtNeeded: false` when the problem is resolved."#,
+        annotations(
+            title = "Sequential Thinking",
+            read_only_hint = false,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = false
+        )
+    )]
+    pub async fn sequentialthinking(
+        &self,
+        params: Parameters<SequentialThinkingInput>,
+    ) -> Result<CallToolResult, rmcp::ErrorData> {
+        self.process_thought_impl(params).await
+    }
+
+    /// Step-by-step reasoning engine supporting revisions and branching exploration. (Alias for `sequentialthinking`).
+    #[tool(
+        name = "sequentialthinking-rs",
+        description = r#"Step-by-step reasoning engine supporting revisions and branching exploration. (Alias for sequentialthinking)."#,
+        annotations(
+            title = "Sequential Thinking",
+            read_only_hint = false,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = false
+        )
+    )]
+    pub async fn sequentialthinking_rs(
+        &self,
+        params: Parameters<SequentialThinkingInput>,
+    ) -> Result<CallToolResult, rmcp::ErrorData> {
+        self.process_thought_impl(params).await
+    }
+}

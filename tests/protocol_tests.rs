@@ -2,15 +2,13 @@ use rmcp::ServerHandler;
 use rmcp::handler::server::wrapper::Parameters;
 use sequentialthinking_rs::SequentialThinkingServer;
 use sequentialthinking_rs::model::{SequentialThinkingInput, SequentialThinkingResponse};
+use sequentialthinking_rs::sink::NoopThoughtSink;
+use sequentialthinking_rs::thinking::SequentialThinkingState;
 
 #[tokio::test]
 async fn test_tool_execution_via_server() {
-    let server = SequentialThinkingServer::new();
-    {
-        let state_arc = server.state();
-        let mut state = state_arc.lock().await;
-        state.set_disable_thought_logging(true);
-    }
+    let state = SequentialThinkingState::with_sink(Box::new(NoopThoughtSink));
+    let server = SequentialThinkingServer::with_state(state);
 
     let input1 = SequentialThinkingInput {
         thought: "Testing tool handler execution - thought 1".to_string(),
@@ -56,13 +54,35 @@ async fn test_tool_execution_via_server() {
 }
 
 #[tokio::test]
+async fn test_tool_alias_execution() {
+    let state = SequentialThinkingState::with_sink(Box::new(NoopThoughtSink));
+    let server = SequentialThinkingServer::with_state(state);
+
+    let input = SequentialThinkingInput {
+        thought: "Testing tool alias handler".to_string(),
+        next_thought_needed: false,
+        thought_number: 1,
+        total_thoughts: 1,
+        is_revision: None,
+        revises_thought: None,
+        branch_from_thought: None,
+        branch_id: None,
+        needs_more_thoughts: None,
+    };
+
+    // Call through the alias tool name sequentialthinking_rs
+    let result = server.sequentialthinking_rs(Parameters(input)).await.unwrap();
+    assert_eq!(result.is_error, Some(false));
+    let text = result.content[0].as_text().unwrap();
+    let resp: SequentialThinkingResponse = serde_json::from_str(&text.text).unwrap();
+    assert_eq!(resp.thought_number, 1);
+    assert_eq!(resp.thought_history_length, 1);
+}
+
+#[tokio::test]
 async fn test_tool_error_via_server() {
-    let server = SequentialThinkingServer::new();
-    {
-        let state_arc = server.state();
-        let mut state = state_arc.lock().await;
-        state.set_disable_thought_logging(true);
-    }
+    let state = SequentialThinkingState::with_sink(Box::new(NoopThoughtSink));
+    let server = SequentialThinkingServer::with_state(state);
 
     let invalid_input = SequentialThinkingInput {
         thought: "Testing error handling".to_string(),
@@ -91,11 +111,10 @@ async fn test_server_info_and_instructions() {
     let server = SequentialThinkingServer::new();
     let info = server.get_info();
 
-    assert_eq!(info.server_info.name, "sequential-thinking-server");
+    assert_eq!(info.server_info.name, "sequentialthinking");
     assert_eq!(info.server_info.version, "0.1.0");
     assert!(info.instructions.is_some());
     let instructions = info.instructions.unwrap();
     assert!(instructions.contains("Sequential Thinking Server"));
     assert!(instructions.contains("sequentialthinking"));
 }
-

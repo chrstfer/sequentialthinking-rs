@@ -1,0 +1,36 @@
+#+TITLE: Sequential Thinking Domain Context
+#+DATE: 2026-09-04
+
+* Sequential Thinking
+
+A dynamic, reflective, and non-linear step-by-step problem-solving framework that allows an agent to iteratively formulate hypotheses, revise prior deductions, and branch into alternative exploration paths before concluding.
+
+* Language
+
+** Thought
+A discrete reasoning step containing analytical reflection, hypothesis generation, verification, or conclusion.
+_Avoid_: Step, message, turn, prompt, log
+
+** Thought Number
+A 1-based integer position tracking the global chronological sequence of thoughts within a session.
+_Avoid_: Index, step ID, 0-based index
+
+** Total Thoughts
+The dynamic estimate of total thought steps needed to resolve a problem.
+_Avoid_: Max thoughts, limit, thought budget
+
+** Revision
+An explicit correction, amendment, or reconsideration of a previously recorded thought in history.
+_Avoid_: Overwrite, edit, undo, rollback
+
+** Branch
+A named line of exploration diverging from a specific historical thought origin.
+_Avoid_: Fork, thread, child session, sub-task
+
+** Thought History
+The linear, chronological record of all processed thoughts across a thinking session.
+_Avoid_: Context buffer, chat history, conversation state
+
+** Branch History
+The collection of thoughts associated with a specific branch label.
+_Avoid_: Branch stack, sub-thread

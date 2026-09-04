@@ -1,5 +1,6 @@
 use sequentialthinking_rs::model::{SequentialThinkingInput, SequentialThinkingResponse};
-use sequentialthinking_rs::thinking::{SequentialThinkingState, format_thought};
+use sequentialthinking_rs::sink::{NoopThoughtSink, format_thought};
+use sequentialthinking_rs::thinking::SequentialThinkingState;
 
 #[test]
 fn test_schema_portability_and_structure() {
@@ -88,8 +89,7 @@ fn test_schema_portability_and_structure() {
 
 #[test]
 fn test_basic_thought_progression() {
-    let mut state = SequentialThinkingState::new();
-    state.set_disable_thought_logging(true);
+    let mut state = SequentialThinkingState::with_sink(Box::new(NoopThoughtSink));
 
     let t1 = SequentialThinkingInput {
         thought: "First step: analyzing problem".to_string(),
@@ -154,8 +154,7 @@ fn test_basic_thought_progression() {
 
 #[test]
 fn test_dynamic_total_thoughts_adjustment() {
-    let mut state = SequentialThinkingState::new();
-    state.set_disable_thought_logging(true);
+    let mut state = SequentialThinkingState::with_sink(Box::new(NoopThoughtSink));
 
     let t = SequentialThinkingInput {
         thought: "Need an extra step beyond initial plan".to_string(),
@@ -177,8 +176,7 @@ fn test_dynamic_total_thoughts_adjustment() {
 
 #[test]
 fn test_revision_and_formatting() {
-    let mut state = SequentialThinkingState::new();
-    state.set_disable_thought_logging(true);
+    let mut state = SequentialThinkingState::with_sink(Box::new(NoopThoughtSink));
 
     let t1 = SequentialThinkingInput {
         thought: "Initial premise".to_string(),
@@ -217,8 +215,7 @@ fn test_revision_and_formatting() {
 
 #[test]
 fn test_branching_and_continuations() {
-    let mut state = SequentialThinkingState::new();
-    state.set_disable_thought_logging(true);
+    let mut state = SequentialThinkingState::with_sink(Box::new(NoopThoughtSink));
 
     let t1 = SequentialThinkingInput {
         thought: "Root thought for branching".to_string(),
@@ -326,8 +323,7 @@ fn test_multiline_ascii_formatting() {
 
 #[test]
 fn test_validation_errors_and_formatting() {
-    let mut state = SequentialThinkingState::new();
-    state.set_disable_thought_logging(true);
+    let mut state = SequentialThinkingState::with_sink(Box::new(NoopThoughtSink));
 
     // Empty thought
     let empty_thought = SequentialThinkingInput {
@@ -524,8 +520,7 @@ fn test_serde_json_compatibility() {
 
 #[test]
 fn test_idempotent_thought_deduplication_and_branch_cleanup() {
-    let mut state = SequentialThinkingState::new();
-    state.set_disable_thought_logging(true);
+    let mut state = SequentialThinkingState::with_sink(Box::new(NoopThoughtSink));
 
     let t1 = SequentialThinkingInput {
         thought: "Initial analysis step".to_string(),
@@ -620,8 +615,7 @@ fn test_idempotent_thought_deduplication_and_branch_cleanup() {
 
 #[test]
 fn test_total_thoughts_adjusted_flag() {
-    let mut state = SequentialThinkingState::new();
-    state.set_disable_thought_logging(true);
+    let mut state = SequentialThinkingState::with_sink(Box::new(NoopThoughtSink));
 
     let t = SequentialThinkingInput {
         thought: "Need an extra step beyond initial plan".to_string(),
@@ -644,8 +638,7 @@ fn test_total_thoughts_adjusted_flag() {
 
 #[test]
 fn test_non_dense_thought_numbers_and_revision_validation() {
-    let mut state = SequentialThinkingState::new();
-    state.set_disable_thought_logging(true);
+    let mut state = SequentialThinkingState::with_sink(Box::new(NoopThoughtSink));
 
     // Thought 1
     let t1 = SequentialThinkingInput {

@@ -1,0 +1,11 @@
+
+
+* index.ts
+
+#+INCLUDE: index.ts :src ts
+
+* lib.ts
+
+#+INCLUDE: lib.ts :src ts
+
+

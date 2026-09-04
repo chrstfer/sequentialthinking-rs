@@ -40,50 +40,45 @@ fn nullable_u32_min1_schema(
 #[serde(rename_all = "camelCase")]
 #[schemars(deny_unknown_fields)]
 pub struct SequentialThinkingInput {
-    /// Your current thinking step. This contains the substantive analysis, reasoning, hypothesis generation, verification, or reflection for this step.
+    /// The reasoning, analysis, or deduction for this thought.
     #[serde(alias = "thought")]
     pub thought: String,
 
-    /// Whether another thought step is required after this one. Set to `true` to continue reasoning, or `false` only when the problem is fully resolved and a final satisfactory conclusion is reached.
+    /// True to continue reasoning; false when concluded.
     #[serde(alias = "next_thought_needed")]
     pub next_thought_needed: bool,
 
-    /// Current thought number in sequence (1-based integer, e.g. 1, 2, 3). Can extend beyond the initial total estimate if additional thinking is needed.
+    /// 1-based position of this thought in sequence.
     #[serde(alias = "thought_number")]
     #[schemars(range(min = 1))]
     pub thought_number: u32,
 
-    /// Current estimated total number of thoughts required (integer >= 1). Can be dynamically adjusted up or down as understanding deepens.
+    /// Estimated total thoughts needed (adjust dynamically as understanding deepens).
     #[serde(alias = "total_thoughts")]
     #[schemars(range(min = 1))]
     pub total_thoughts: u32,
 
-    /// Whether this thought revises, questions, or corrects previous thinking steps.
-    /// Optional (defaults to false).
+    /// True if this thought revises an earlier thought.
     #[serde(default, alias = "is_revision")]
     #[schemars(schema_with = "nullable_schema::<bool>")]
     pub is_revision: Option<bool>,
 
-    /// When `isRevision` is true, the specific 1-based thought number being reconsidered or amended.
-    /// Optional.
+    /// 1-based thought number being revised (required if isRevision is true).
     #[serde(default, alias = "revises_thought")]
     #[schemars(schema_with = "nullable_u32_min1_schema")]
     pub revises_thought: Option<u32>,
 
-    /// When exploring an alternative hypothesis or branch, the 1-based thought number
-    /// that serves as the branching origin point. Optional.
+    /// 1-based thought number serving as the branch origin.
     #[serde(default, alias = "branch_from_thought")]
     #[schemars(schema_with = "nullable_u32_min1_schema")]
     pub branch_from_thought: Option<u32>,
 
-    /// A descriptive identifier or label for the branch being created or continued
-    /// (e.g. 'approach-b', 'alt-hypothesis'). Optional.
+    /// Branch identifier (e.g. 'alt-hypothesis'). Required when branching.
     #[serde(default, alias = "branch_id")]
     #[schemars(schema_with = "nullable_schema::<String>")]
     pub branch_id: Option<String>,
 
-    /// Set to `true` if you reached what seemed like the end of the planned sequence
-    /// but realize further thought steps are needed. Optional.
+    /// True if additional thoughts are needed beyond the initial estimate.
     #[serde(default, alias = "needs_more_thoughts")]
     #[schemars(schema_with = "nullable_schema::<bool>")]
     pub needs_more_thoughts: Option<bool>,
@@ -93,25 +88,25 @@ pub struct SequentialThinkingInput {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct SequentialThinkingResponse {
-    /// The thought number that was just processed and recorded in sequence.
+    /// Recorded thought number.
     pub thought_number: u32,
 
-    /// The updated estimate of total thoughts needed for this problem.
+    /// Current total thoughts estimate.
     pub total_thoughts: u32,
 
-    /// Echoes whether another thought step is expected before completing.
+    /// Whether further thinking is expected.
     pub next_thought_needed: bool,
 
-    /// List of all active branch identifiers created during this thinking session.
+    /// Active branch identifiers in this session.
     pub branches: Vec<String>,
 
-    /// Total number of thoughts recorded in the current session history.
+    /// Total thoughts recorded in session history.
     pub thought_history_length: usize,
 
-    /// True if `totalThoughts` was automatically adjusted to match `thoughtNumber`.
+    /// True if totalThoughts was auto-expanded to match thoughtNumber.
     pub total_thoughts_adjusted: bool,
 
-    /// True if this call replaced/updated an existing recorded thought at this `thoughtNumber`.
+    /// True if an existing thought was updated in-place.
     pub replaced_existing: bool,
 }
 
