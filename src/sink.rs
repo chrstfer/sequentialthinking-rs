@@ -13,14 +13,14 @@ pub trait ThoughtSink: Send + Sync {
     fn on_warning(&self, message: &str);
 }
 
-/// Renders thoughts as ASCII boxes and writes to stderr.
+/// Renders thoughts in a traditional log output style and writes to stderr.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct StderrThoughtSink;
 
 impl ThoughtSink for StderrThoughtSink {
     fn on_thought(&self, input: &SequentialThinkingInput) {
         let formatted = format_thought(input);
-        eprintln!("{}", formatted);
+        eprintln!("{}\n", formatted);
     }
 
     fn on_warning(&self, message: &str) {
@@ -55,7 +55,7 @@ impl<W: Write + Send + Sync + 'static> ThoughtSink for WriterThoughtSink<W> {
     fn on_thought(&self, input: &SequentialThinkingInput) {
         let formatted = format_thought(input);
         if let Ok(mut w) = self.writer.lock() {
-            let _ = writeln!(w, "{}", formatted);
+            let _ = writeln!(w, "{}\n", formatted);
         }
     }
 
@@ -66,7 +66,7 @@ impl<W: Write + Send + Sync + 'static> ThoughtSink for WriterThoughtSink<W> {
     }
 }
 
-/// Format a thought into an ASCII framed box with bracketed tag headers.
+/// Format a thought into a clean, traditional log message without width-dependent elements.
 pub fn format_thought(thought_data: &SequentialThinkingInput) -> String {
     let header = if thought_data.is_revision.unwrap_or(false) {
         let revises = thought_data
@@ -112,39 +112,12 @@ pub fn format_thought(thought_data: &SequentialThinkingInput) -> String {
         )
     };
 
-    let thought_lines: Vec<&str> = if thought_data.thought.is_empty() {
-        vec![""]
+    let thought = thought_data.thought.trim_end();
+    if thought.is_empty() {
+        format!("{header}:")
+    } else if thought.contains('\n') {
+        format!("{header}:\n{thought}")
     } else {
-        thought_data.thought.lines().collect()
-    };
-
-    let max_line_len = thought_lines
-        .iter()
-        .map(|l| l.chars().count())
-        .max()
-        .unwrap_or(0);
-
-    let content_width = std::cmp::max(header.chars().count(), max_line_len);
-    let border = "-".repeat(content_width + 2);
-
-    let mut out = String::new();
-    out.push('+');
-    out.push_str(&border);
-    out.push_str("+\n");
-
-    out.push_str(&format!("| {:<width$} |\n", header, width = content_width));
-
-    out.push('+');
-    out.push_str(&border);
-    out.push_str("+\n");
-
-    for line in thought_lines {
-        out.push_str(&format!("| {:<width$} |\n", line, width = content_width));
+        format!("{header}: {thought}")
     }
-
-    out.push('+');
-    out.push_str(&border);
-    out.push('+');
-
-    out
 }

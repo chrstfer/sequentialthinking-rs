@@ -204,10 +204,12 @@ fn test_revision_and_formatting() {
     };
 
     let formatted = format_thought(&t2);
-    assert!(formatted.contains("[Revision] 2/4 (revising thought 1)"));
-    assert!(formatted.contains("Revising our previous assumption about data size"));
-    assert!(formatted.starts_with('+'));
-    assert!(formatted.ends_with('+'));
+    assert_eq!(
+        formatted,
+        "[Revision] 2/4 (revising thought 1): Revising our previous assumption about data size"
+    );
+    assert!(!formatted.contains('+'));
+    assert!(!formatted.contains('|'));
 
     let resp = state.process_thought(t2).unwrap();
     assert_eq!(resp.thought_number, 2);
@@ -244,7 +246,10 @@ fn test_branching_and_continuations() {
     };
 
     let formatted_branch = format_thought(&t_branch_a1);
-    assert!(formatted_branch.contains("[Branch] 2/4 (from thought 1, ID: branch-a)"));
+    assert_eq!(
+        formatted_branch,
+        "[Branch] 2/4 (from thought 1, ID: branch-a): Exploring branch approach A - step 1"
+    );
 
     let resp_a1 = state.process_thought(t_branch_a1).unwrap();
     assert_eq!(resp_a1.branches, vec!["branch-a".to_string()]);
@@ -264,7 +269,10 @@ fn test_branching_and_continuations() {
     };
 
     let formatted_a2 = format_thought(&t_branch_a2);
-    assert!(formatted_a2.contains("[Branch] 3/4 (branch: branch-a)"));
+    assert_eq!(
+        formatted_a2,
+        "[Branch] 3/4 (branch: branch-a): Continuing branch approach A - step 2"
+    );
 
     let resp_a2 = state.process_thought(t_branch_a2).unwrap();
     assert_eq!(resp_a2.branches, vec!["branch-a".to_string()]);
@@ -292,7 +300,7 @@ fn test_branching_and_continuations() {
 }
 
 #[test]
-fn test_multiline_ascii_formatting() {
+fn test_multiline_log_formatting() {
     let t = SequentialThinkingInput {
         thought: "Line one of thought\nLine two with more detail\nLine three conclusion"
             .to_string(),
@@ -307,18 +315,37 @@ fn test_multiline_ascii_formatting() {
     };
 
     let formatted = format_thought(&t);
-    assert!(formatted.contains("[Thought] 1/5"));
-    assert!(formatted.contains("Line one of thought"));
-    assert!(formatted.contains("Line two with more detail"));
-    assert!(formatted.contains("Line three conclusion"));
+    let expected = "[Thought] 1/5:\nLine one of thought\nLine two with more detail\nLine three conclusion";
+    assert_eq!(formatted, expected);
 
-    // Verify all lines have ASCII box borders
+    // Verify no ASCII box border characters
+    assert!(!formatted.contains('+'));
+    assert!(!formatted.contains('|'));
+
+    // Verify no lines have trailing whitespace padding
     for line in formatted.lines() {
-        assert!(
-            (line.starts_with('+') && line.ends_with('+'))
-                || (line.starts_with('|') && line.ends_with('|'))
-        );
+        assert_eq!(line, line.trim_end());
     }
+}
+
+#[test]
+fn test_single_line_log_formatting() {
+    let t = SequentialThinkingInput {
+        thought: "Formulating initial hypothesis".to_string(),
+        next_thought_needed: true,
+        thought_number: 1,
+        total_thoughts: 3,
+        is_revision: None,
+        revises_thought: None,
+        branch_from_thought: None,
+        branch_id: None,
+        needs_more_thoughts: None,
+    };
+
+    let formatted = format_thought(&t);
+    assert_eq!(formatted, "[Thought] 1/3: Formulating initial hypothesis");
+    assert!(!formatted.contains('+'));
+    assert!(!formatted.contains('|'));
 }
 
 #[test]

@@ -87,7 +87,7 @@ target/release/sequentialthinking-rs
 
 | Variable | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `DISABLE_THOUGHT_LOGGING` | `bool` | `false` | When set to `true` or `1`, suppresses ASCII thought-box rendering to `stderr`. |
+| `DISABLE_THOUGHT_LOGGING` | `bool` | `false` | When set to `true` or `1`, suppresses thought log rendering to `stderr`. |
 | `RUST_LOG` | `string` | `info` | Controls log filter levels for `tracing_subscriber` (e.g., `debug`, `trace`). |
 
 ---
@@ -113,7 +113,7 @@ While maintaining protocol-level compatibility with the reference TypeScript ser
 | **Input Key Case Tolerance** | Requires exact `camelCase` keys | Accepts standard `camelCase` with fallback `snake_case` aliases |
 | **Nullable JSON Schema** | Uses TypeScript/Zod schema conventions | Generates portable `anyOf: [T, null]` schemas to ensure broad client compatibility |
 | **Revision / Branch Validation** | Flexible / permissive runtime checks | Enforces relational constraints (e.g., revisions and branch origins must reference existing history) |
-| **Logging Output** | Formatted ASCII boxes to `console.error` | Configurable ASCII visualization to `stderr` with optional disable via `DISABLE_THOUGHT_LOGGING` |
+| **Logging Output** | Formatted ASCII boxes to `console.error` | Clean, traditional log output to `stderr` without artificial width constraints or ASCII boxes |
 
 ---
 
