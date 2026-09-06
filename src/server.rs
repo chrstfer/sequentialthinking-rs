@@ -8,6 +8,7 @@ use rmcp::{
     tool, tool_handler, tool_router,
 };
 
+use crate::counter::{CounterInput, CounterOutput, CounterState};
 use crate::model::SequentialThinkingInput;
 use crate::thinking::SequentialThinkingState;
 
@@ -15,6 +16,7 @@ use crate::thinking::SequentialThinkingState;
 #[derive(Clone)]
 pub struct SequentialThinkingServer {
     state: Arc<Mutex<SequentialThinkingState>>,
+    counter_state: Arc<Mutex<CounterState>>,
     tool_router: ToolRouter<Self>,
 }
 
@@ -28,7 +30,7 @@ impl Default for SequentialThinkingServer {
     router = self.tool_router,
     name = "sequentialthinking",
     version = "0.1.0",
-    instructions = "Sequential Thinking Server: provides the sequentialthinking tool for iterative, non-linear reasoning with branching and revisions."
+    instructions = "Sequential Thinking Server: provides the sequentialthinking tool for iterative reasoning and the counter tool for tracking progress across iterative tasks."
 )]
 impl ServerHandler for SequentialThinkingServer {}
 
@@ -36,23 +38,40 @@ impl ServerHandler for SequentialThinkingServer {}
 impl SequentialThinkingServer {
     /// Create a new instance of the SequentialThinkingServer.
     pub fn new() -> Self {
-        Self {
-            state: Arc::new(Mutex::new(SequentialThinkingState::new())),
-            tool_router: Self::tool_router(),
-        }
+        Self::with_states(
+            SequentialThinkingState::new(),
+            CounterState::new(),
+        )
     }
 
-    /// Create a new instance with a custom state (e.g. for testing with custom sinks).
+    /// Create a new instance with a custom thinking state.
     pub fn with_state(state: SequentialThinkingState) -> Self {
+        Self::with_states(
+            state,
+            CounterState::new(),
+        )
+    }
+
+    /// Create a new instance with custom thinking and counter states.
+    pub fn with_states(
+        thinking_state: SequentialThinkingState,
+        counter_state: CounterState,
+    ) -> Self {
         Self {
-            state: Arc::new(Mutex::new(state)),
+            state: Arc::new(Mutex::new(thinking_state)),
+            counter_state: Arc::new(Mutex::new(counter_state)),
             tool_router: Self::tool_router(),
         }
     }
 
-    /// Access the underlying state.
+    /// Access the underlying thinking state.
     pub fn state(&self) -> Arc<Mutex<SequentialThinkingState>> {
         Arc::clone(&self.state)
+    }
+
+    /// Access the underlying counter state.
+    pub fn counter_state(&self) -> Arc<Mutex<CounterState>> {
+        Arc::clone(&self.counter_state)
     }
 
     /// Internal helper to execute thought processing and format results.
@@ -111,5 +130,35 @@ Record one thought per call. Thoughts can revise previous thoughts (`isRevision:
         params: Parameters<SequentialThinkingInput>,
     ) -> Result<CallToolResult, rmcp::ErrorData> {
         self.process_thought_impl(params).await
+    }
+
+    /// Track progress across iterative tasks. Call with total to initialize; call with no args to step.
+    #[tool(
+        name = "counter",
+        description = "Track progress across iterative tasks. Call with total to initialize; call with no args to step.",
+        annotations(
+            title = "Task Counter",
+            read_only_hint = false,
+            destructive_hint = false,
+            idempotent_hint = false,
+            open_world_hint = false
+        )
+    )]
+    pub async fn counter(
+        &self,
+        params: Parameters<CounterInput>,
+    ) -> Result<CallToolResult, rmcp::ErrorData> {
+        let mut state = self.counter_state.lock().await;
+        match state.process(params.0) {
+            Ok(CounterOutput::Progress(resp)) => {
+                let json_text =
+                    serde_json::to_string(&resp).unwrap_or_else(|_| "{}".to_string());
+                Ok(CallToolResult::success(vec![ContentBlock::text(json_text)]))
+            }
+            Ok(CounterOutput::Finished(msg)) => {
+                Ok(CallToolResult::success(vec![ContentBlock::text(msg)]))
+            }
+            Err(err_msg) => Ok(CallToolResult::error(vec![ContentBlock::text(err_msg)])),
+        }
     }
 }

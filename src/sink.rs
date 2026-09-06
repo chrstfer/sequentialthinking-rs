@@ -11,6 +11,11 @@ pub trait ThoughtSink: Send + Sync {
 
     /// Called for non-fatal diagnostic observations (e.g. large thought numbers, sequence gaps).
     fn on_warning(&self, message: &str);
+
+    /// Called after a counter step is processed.
+    fn on_counter(&self, log_line: &str) {
+        eprintln!("{}\n", log_line);
+    }
 }
 
 /// Renders thoughts in a traditional log output style and writes to stderr.
@@ -26,6 +31,10 @@ impl ThoughtSink for StderrThoughtSink {
     fn on_warning(&self, message: &str) {
         eprintln!("{}", message);
     }
+
+    fn on_counter(&self, log_line: &str) {
+        eprintln!("{}\n", log_line);
+    }
 }
 
 /// Discards all output. Used in unit and protocol tests.
@@ -35,6 +44,7 @@ pub struct NoopThoughtSink;
 impl ThoughtSink for NoopThoughtSink {
     fn on_thought(&self, _input: &SequentialThinkingInput) {}
     fn on_warning(&self, _message: &str) {}
+    fn on_counter(&self, _log_line: &str) {}
 }
 
 /// Writes thought output and warnings to an underlying writer (e.g. a log file).
@@ -62,6 +72,12 @@ impl<W: Write + Send + Sync + 'static> ThoughtSink for WriterThoughtSink<W> {
     fn on_warning(&self, message: &str) {
         if let Ok(mut w) = self.writer.lock() {
             let _ = writeln!(w, "{}", message);
+        }
+    }
+
+    fn on_counter(&self, log_line: &str) {
+        if let Ok(mut w) = self.writer.lock() {
+            let _ = writeln!(w, "{}\n", log_line);
         }
     }
 }

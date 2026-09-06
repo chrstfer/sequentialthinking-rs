@@ -9,11 +9,20 @@ A fast, lightweight, and memory-safe Rust implementation of the Model Context Pr
 
 ## Overview
 
-`sequentialthinking-rs` provides an MCP tool that enables LLMs to break down complex tasks through dynamic, reflective, and non-linear reasoning. It allows models to:
-- Adjust estimated reasoning steps (`totalThoughts`) dynamically as complexity unfolds.
-- Reconsider, revise, and refine previous deductions with explicit revision markers.
-- Branch off from earlier thoughts to explore alternative hypotheses in parallel.
-- Maintain structured reasoning context across multi-step analytical sessions.
+`sequentialthinking-rs` provides tools that assist LLM agents across multi-turn reasoning and execution tasks:
+
+1. **`sequentialthinking`** (and alias **`sequentialthinking-rs`**): Enables LLMs to break down complex tasks through dynamic, reflective, and non-linear reasoning. It allows models to:
+   - Adjust estimated reasoning steps (`totalThoughts`) dynamically as complexity unfolds.
+   - Reconsider, revise, and refine previous deductions with explicit revision markers.
+   - Branch off from earlier thoughts to explore alternative hypotheses in parallel.
+   - Maintain structured reasoning context across multi-step analytical sessions.
+
+2. **`counter`**: A lightweight, token-efficient task counter for tracking progress across iterative, multi-turn workflows without reasoning structure or prompt overhead:
+   - **Initialize**: `counter({ "total": 10 })` sets `current = 1, remaining = 9, done = false`.
+   - **Step**: `counter({})` auto-increments `current`.
+   - **Query**: `counter({ "step": 0 })` reads current status without incrementing.
+   - **Multi-Counter**: Optional `name` parameter supports concurrent named counters (defaults to `"default"`).
+   - **Completion Guard**: Stepping after completion returns `"Your counter has finished, move on."`.
 
 ---
 
@@ -113,7 +122,8 @@ While maintaining protocol-level compatibility with the reference TypeScript ser
 | **Input Key Case Tolerance** | Requires exact `camelCase` keys | Accepts standard `camelCase` with fallback `snake_case` aliases |
 | **Nullable JSON Schema** | Uses TypeScript/Zod schema conventions | Generates portable `anyOf: [T, null]` schemas to ensure broad client compatibility |
 | **Revision / Branch Validation** | Flexible / permissive runtime checks | Enforces relational constraints (e.g., revisions and branch origins must reference existing history) |
-| **Logging Output** | Formatted ASCII boxes to `console.error` | Clean, traditional log output to `stderr` without artificial width constraints or ASCII boxes |
+| **Logging Output** | Formatted ASCII boxes to `console.error` | Traditional, width-independent log output to `stderr` |
+| **Iterated Task Counting** | Not supported | Dedicated lightweight `counter` tool |
 
 ---
 

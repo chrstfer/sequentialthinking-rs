@@ -34,3 +34,7 @@ _Avoid_: Context buffer, chat history, conversation state
 ** Branch History
 The collection of thoughts associated with a specific branch label.
 _Avoid_: Branch stack, sub-thread
+
+** Task Counter
+A lightweight, non-reflective monotonic sequence tracker for iterative multi-turn tasks.
+_Avoid_: Thought, reflection, hypothesis, timer
