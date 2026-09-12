@@ -48,7 +48,7 @@ impl SequentialThinkingState {
     ) -> Result<SequentialThinkingResponse, String> {
         // Validate thought text
         if input.thought.trim().is_empty() {
-            return Err("Sequential Thinking Error:\n\
+            return Err("Thinking Error:\n\
                  - Field: `thought`\n\
                  - Received: empty content\n\
                  - Constraint: `thought` must contain substantive reasoning, analysis, or hypothesis text.\n\
@@ -57,16 +57,16 @@ impl SequentialThinkingState {
 
         // Validate thoughtNumber
         if input.thought_number == 0 {
-            return Err("Sequential Thinking Error:\n\
+            return Err("Thinking Error:\n\
                  - Field: `thoughtNumber`\n\
                  - Received: 0\n\
                  - Constraint: `thoughtNumber` must be an integer >= 1.\n\
-                 - Suggestion: Sequential thoughts are 1-based. Please start with `thoughtNumber: 1` for the initial step.".to_string());
+                 - Suggestion: Thoughts are 1-based. Please start with `thoughtNumber: 1` for the initial step.".to_string());
         }
 
         // Validate totalThoughts
         if input.total_thoughts == 0 {
-            return Err("Sequential Thinking Error:\n\
+            return Err("Thinking Error:\n\
                  - Field: `totalThoughts`\n\
                  - Received: 0\n\
                  - Constraint: `totalThoughts` must be an integer >= 1.\n\
@@ -97,7 +97,7 @@ impl SequentialThinkingState {
 
         // Validate revisesThought consistency with isRevision (M-1 & M-2)
         if input.is_revision == Some(true) && input.revises_thought.is_none() {
-            return Err("Sequential Thinking Error:\n\
+            return Err("Thinking Error:\n\
                  - Field: `revisesThought`\n\
                  - Received: missing\n\
                  - Constraint: `revisesThought` is required when `isRevision` is true.\n\
@@ -105,7 +105,7 @@ impl SequentialThinkingState {
         }
 
         if input.revises_thought.is_some() && input.is_revision != Some(true) {
-            return Err("Sequential Thinking Error:\n\
+            return Err("Thinking Error:\n\
                  - Field: `isRevision`\n\
                  - Received: false or null\n\
                  - Constraint: `isRevision` must be true when `revisesThought` is specified.\n\
@@ -115,7 +115,7 @@ impl SequentialThinkingState {
         // Validate revisesThought bounds if specified
         if let Some(rev) = input.revises_thought {
             if rev == 0 {
-                return Err("Sequential Thinking Error:\n\
+                return Err("Thinking Error:\n\
                      - Field: `revisesThought`\n\
                      - Received: 0\n\
                      - Constraint: `revisesThought` must be a 1-based thought number (>= 1).\n\
@@ -123,7 +123,7 @@ impl SequentialThinkingState {
             }
             if rev > input.thought_number {
                 return Err(format!(
-                    "Sequential Thinking Error:\n\
+                    "Thinking Error:\n\
                      - Field: `revisesThought`\n\
                      - Received: {}\n\
                      - Constraint: `revisesThought` ({}) cannot exceed current `thoughtNumber` ({}).\n\
@@ -133,7 +133,7 @@ impl SequentialThinkingState {
             }
             if !self.thought_history.iter().any(|t| t.thought_number == rev) {
                 return Err(format!(
-                    "Sequential Thinking Error:\n\
+                    "Thinking Error:\n\
                      - Field: `revisesThought`\n\
                      - Received: {}\n\
                      - Constraint: `revisesThought` must reference a thought number that exists in session history.\n\
@@ -146,14 +146,14 @@ impl SequentialThinkingState {
         // Validate branchFromThought and branchId if specified
         if let Some(branch_from) = input.branch_from_thought {
             if branch_from == 0 {
-                return Err("Sequential Thinking Error:\n\
+                return Err("Thinking Error:\n\
                      - Field: `branchFromThought`\n\
                      - Received: 0\n\
                      - Constraint: `branchFromThought` must be a 1-based thought number (>= 1).\n\
                      - Suggestion: Specify a valid 1-based thought number from history as the branching origin.".to_string());
             }
             if input.branch_id.as_deref().unwrap_or("").trim().is_empty() {
-                return Err("Sequential Thinking Error:\n\
+                return Err("Thinking Error:\n\
                      - Field: `branchId`\n\
                      - Received: missing or empty\n\
                      - Constraint: `branchId` is required when `branchFromThought` is specified.\n\
@@ -161,7 +161,7 @@ impl SequentialThinkingState {
             }
             if branch_from > input.thought_number {
                 return Err(format!(
-                    "Sequential Thinking Error:\n\
+                    "Thinking Error:\n\
                      - Field: `branchFromThought`\n\
                      - Received: {}\n\
                      - Constraint: `branchFromThought` ({}) cannot exceed current `thoughtNumber` ({}).\n\
@@ -171,7 +171,7 @@ impl SequentialThinkingState {
             }
             if !self.thought_history.iter().any(|t| t.thought_number == branch_from) {
                 return Err(format!(
-                    "Sequential Thinking Error:\n\
+                    "Thinking Error:\n\
                      - Field: `branchFromThought`\n\
                      - Received: {}\n\
                      - Constraint: `branchFromThought` must reference a thought number that exists in session history.\n\

@@ -7,7 +7,6 @@ use rmcp::{
     model::{CallToolResult, ContentBlock},
     tool, tool_handler, tool_router,
 };
-
 use crate::counter::{CounterInput, CounterOutput, CounterState};
 use crate::model::SequentialThinkingInput;
 use crate::thinking::SequentialThinkingState;
@@ -28,9 +27,9 @@ impl Default for SequentialThinkingServer {
 
 #[tool_handler(
     router = self.tool_router,
-    name = "sequentialthinking",
-    version = "0.1.0",
-    instructions = "Sequential Thinking Server: provides the sequentialthinking tool for iterative reasoning and the counter tool for tracking progress across iterative tasks."
+    name = "seq",
+    version = "0.2.0",
+    instructions = "Seq Server: provides the thinking tool for iterative reasoning and the count tool for tracking progress across iterative tasks."
 )]
 impl ServerHandler for SequentialThinkingServer {}
 
@@ -94,47 +93,27 @@ impl SequentialThinkingServer {
 
     /// Step-by-step reasoning engine supporting revisions and branching exploration.
     #[tool(
-        name = "sequentialthinking",
+        name = "thinking",
         description = r#"Step-by-step reasoning engine supporting revisions and branching exploration.
 
-Record one thought per call. Thoughts can revise previous thoughts (`isRevision: true`, `revisesThought`) or branch into alternative exploration paths (`branchFromThought`, `branchId`). Set `nextThoughtNeeded: false` when the problem is resolved."#,
+Record one thought per call. Thoughts can revise previous thoughts (`isRevision: true`, `revisesThought`) or branch into alternative exploration paths (`branchFromThought`, `branchId`). Always pass `nextThoughtNeeded: true` while reasoning is ongoing; set `nextThoughtNeeded: false` only when the solution is reached."#,
         annotations(
-            title = "Sequential Thinking",
+            title = "Thinking",
             read_only_hint = false,
             destructive_hint = false,
             idempotent_hint = true,
             open_world_hint = false
         )
     )]
-    pub async fn sequentialthinking(
+    pub async fn thinking(
         &self,
         params: Parameters<SequentialThinkingInput>,
     ) -> Result<CallToolResult, rmcp::ErrorData> {
         self.process_thought_impl(params).await
     }
-
-    /// Step-by-step reasoning engine supporting revisions and branching exploration. (Alias for `sequentialthinking`).
-    #[tool(
-        name = "sequentialthinking-rs",
-        description = r#"Step-by-step reasoning engine supporting revisions and branching exploration. (Alias for sequentialthinking)."#,
-        annotations(
-            title = "Sequential Thinking",
-            read_only_hint = false,
-            destructive_hint = false,
-            idempotent_hint = true,
-            open_world_hint = false
-        )
-    )]
-    pub async fn sequentialthinking_rs(
-        &self,
-        params: Parameters<SequentialThinkingInput>,
-    ) -> Result<CallToolResult, rmcp::ErrorData> {
-        self.process_thought_impl(params).await
-    }
-
     /// Track progress across iterative tasks. Call with total to initialize; call with no args to step.
     #[tool(
-        name = "counter",
+        name = "count",
         description = "Track progress across iterative tasks. Call with total to initialize; call with no args to step.",
         annotations(
             title = "Task Counter",
@@ -144,7 +123,7 @@ Record one thought per call. Thoughts can revise previous thoughts (`isRevision:
             open_world_hint = false
         )
     )]
-    pub async fn counter(
+    pub async fn count(
         &self,
         params: Parameters<CounterInput>,
     ) -> Result<CallToolResult, rmcp::ErrorData> {

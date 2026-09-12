@@ -35,7 +35,7 @@ fn nullable_u32_min1_schema(
     serde_json::from_value(value).expect("valid JSON schema for nullable u32 field")
 }
 
-/// Input parameters for the `sequentialthinking` tool.
+/// Input parameters for the `thinking` tool.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 #[schemars(deny_unknown_fields)]
@@ -44,7 +44,7 @@ pub struct SequentialThinkingInput {
     #[serde(alias = "thought")]
     pub thought: String,
 
-    /// True to continue reasoning; false when concluded.
+    /// Whether another thought is needed. Set to true while reasoning is ongoing; set to false only when fully resolved.
     #[serde(alias = "next_thought_needed")]
     pub next_thought_needed: bool,
 
@@ -84,7 +84,7 @@ pub struct SequentialThinkingInput {
     pub needs_more_thoughts: Option<bool>,
 }
 
-/// Output response returned from the `sequentialthinking` tool.
+/// Output response returned from the `thinking` tool.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct SequentialThinkingResponse {

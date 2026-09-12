@@ -262,7 +262,7 @@ async fn test_counter_tool_via_server() {
         total: Some(2),
         ..Default::default()
     };
-    let result1 = server.counter(Parameters(input1)).await.unwrap();
+    let result1 = server.count(Parameters(input1)).await.unwrap();
     assert_eq!(result1.is_error, Some(false));
     let text1 = result1.content[0].as_text().unwrap();
     let resp1: CounterResponse = serde_json::from_str(&text1.text).unwrap();
@@ -274,7 +274,7 @@ async fn test_counter_tool_via_server() {
 
     // Step 2
     let result2 = server
-        .counter(Parameters(CounterInput::default()))
+        .count(Parameters(CounterInput::default()))
         .await
         .unwrap();
     assert_eq!(result2.is_error, Some(false));
@@ -286,7 +286,7 @@ async fn test_counter_tool_via_server() {
 
     // Step 3 (finished notice)
     let result3 = server
-        .counter(Parameters(CounterInput::default()))
+        .count(Parameters(CounterInput::default()))
         .await
         .unwrap();
     assert_eq!(result3.is_error, Some(false));

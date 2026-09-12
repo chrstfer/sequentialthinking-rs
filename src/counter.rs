@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::sink::{StderrThoughtSink, ThoughtSink};
 
-/// Input parameters for the `counter` tool.
+/// Input parameters for the `count` tool.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct CounterInput {
@@ -30,7 +30,7 @@ pub struct CounterInput {
     pub reset: Option<bool>,
 }
 
-/// Output response returned from the `counter` tool.
+/// Output response returned from the `count` tool.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct CounterResponse {

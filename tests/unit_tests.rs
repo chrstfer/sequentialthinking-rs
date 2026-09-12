@@ -365,7 +365,7 @@ fn test_validation_errors_and_formatting() {
         needs_more_thoughts: None,
     };
     let err = state.process_thought(empty_thought).unwrap_err();
-    assert!(err.contains("Sequential Thinking Error:"));
+    assert!(err.contains("Thinking Error:"));
     assert!(err.contains("- Field: `thought`"));
     assert!(err.contains('\n'));
 
@@ -382,7 +382,7 @@ fn test_validation_errors_and_formatting() {
         needs_more_thoughts: None,
     };
     let err = state.process_thought(invalid_num).unwrap_err();
-    assert!(err.contains("Sequential Thinking Error:"));
+    assert!(err.contains("Thinking Error:"));
     assert!(err.contains("- Field: `thoughtNumber`"));
     assert!(err.contains("- Suggestion:"));
     assert!(err.contains('\n'));
@@ -400,7 +400,7 @@ fn test_validation_errors_and_formatting() {
         needs_more_thoughts: None,
     };
     let err = state.process_thought(invalid_total).unwrap_err();
-    assert!(err.contains("Sequential Thinking Error:"));
+    assert!(err.contains("Thinking Error:"));
     assert!(err.contains("- Field: `totalThoughts`"));
     assert!(err.contains('\n'));
 
@@ -417,7 +417,7 @@ fn test_validation_errors_and_formatting() {
         needs_more_thoughts: None,
     };
     let err = state.process_thought(rev_without_target).unwrap_err();
-    assert!(err.contains("Sequential Thinking Error:"));
+    assert!(err.contains("Thinking Error:"));
     assert!(err.contains("- Field: `revisesThought`"));
     assert!(err.contains("is required when `isRevision` is true"));
 
@@ -434,7 +434,7 @@ fn test_validation_errors_and_formatting() {
         needs_more_thoughts: None,
     };
     let err = state.process_thought(target_without_rev).unwrap_err();
-    assert!(err.contains("Sequential Thinking Error:"));
+    assert!(err.contains("Thinking Error:"));
     assert!(err.contains("- Field: `isRevision`"));
     assert!(err.contains("must be true when `revisesThought` is specified"));
 
@@ -465,7 +465,7 @@ fn test_validation_errors_and_formatting() {
         needs_more_thoughts: None,
     };
     let err = state.process_thought(invalid_rev).unwrap_err();
-    assert!(err.contains("Sequential Thinking Error:"));
+    assert!(err.contains("Thinking Error:"));
     assert!(err.contains("- Field: `revisesThought`"));
     assert!(err.contains('\n'));
 
@@ -482,7 +482,7 @@ fn test_validation_errors_and_formatting() {
         needs_more_thoughts: None,
     };
     let err = state.process_thought(invalid_branch).unwrap_err();
-    assert!(err.contains("Sequential Thinking Error:"));
+    assert!(err.contains("Thinking Error:"));
     assert!(err.contains("- Field: `branchId`"));
     assert!(err.contains('\n'));
 }

@@ -14,14 +14,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_millis();
-    let log_path = std::env::var("SEQUENTIALTHINKING_LOG_FILE").unwrap_or_else(|_| {
-        format!(
-            "{}/sequentialthinking-rs-{}-{}.log",
-            std::env::temp_dir().display(),
-            pid,
-            timestamp
-        )
-    });
+    let log_path = std::env::var("SEQ_LOG_FILE")
+        .or_else(|_| std::env::var("SEQUENTIALTHINKING_LOG_FILE"))
+        .unwrap_or_else(|_| {
+            format!(
+                "{}/seq-{}-{}.log",
+                std::env::temp_dir().display(),
+                pid,
+                timestamp
+            )
+        });
 
     let log_file = OpenOptions::new()
         .create(true)
@@ -44,7 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     info!(
         log_file = %log_path,
-        "Starting Sequential Thinking MCP Server on stdio with stderr redirected to log file"
+        "Starting Seq MCP Server on stdio with stderr redirected to log file"
     );
 
     let server = SequentialThinkingServer::new();
@@ -53,6 +55,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let server_handle = server.serve(transport).await?;
     server_handle.waiting().await?;
 
-    info!("Sequential Thinking MCP Server shut down cleanly");
+    info!("Seq MCP Server shut down cleanly");
     Ok(())
 }

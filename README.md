@@ -1,6 +1,6 @@
-# sequentialthinking-rs
+# Seq (`seq`)
 
-A fast, lightweight, and memory-safe Rust implementation of the Model Context Protocol (MCP) [Sequential Thinking Server](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking).
+A fast, lightweight, and memory-safe Rust implementation of the Model Context Protocol (MCP) sequential logic server: **Seq Server** (formerly `sequentialthinking-rs`, alias: `sequentialthinking`).
 
 > **Project Status: Pre-release / Alpha**  
 > This project is currently in alpha. In my own testing in local workflows it has proven stable, performant, and reliable. Community feedback and contributions are welcome.
@@ -11,16 +11,16 @@ A fast, lightweight, and memory-safe Rust implementation of the Model Context Pr
 
 `sequentialthinking-rs` provides tools that assist LLM agents across multi-turn reasoning and execution tasks:
 
-1. **`sequentialthinking`** (and alias **`sequentialthinking-rs`**): Enables LLMs to break down complex tasks through dynamic, reflective, and non-linear reasoning. It allows models to:
+1. **`thinking`**: Enables LLMs to break down complex tasks through dynamic, reflective, and non-linear reasoning. It allows models to:
    - Adjust estimated reasoning steps (`totalThoughts`) dynamically as complexity unfolds.
    - Reconsider, revise, and refine previous deductions with explicit revision markers.
    - Branch off from earlier thoughts to explore alternative hypotheses in parallel.
    - Maintain structured reasoning context across multi-step analytical sessions.
 
-2. **`counter`**: A lightweight, token-efficient task counter for tracking progress across iterative, multi-turn workflows without reasoning structure or prompt overhead:
-   - **Initialize**: `counter({ "total": 10 })` sets `current = 1, remaining = 9, done = false`.
-   - **Step**: `counter({})` auto-increments `current`.
-   - **Query**: `counter({ "step": 0 })` reads current status without incrementing.
+2. **`count`**: A lightweight, token-efficient task counter for tracking progress across iterative, multi-turn workflows without reasoning structure or prompt overhead:
+   - **Initialize**: `count({ "total": 10 })` sets `current = 1, remaining = 9, done = false`.
+   - **Step**: `count({})` auto-increments `current`.
+   - **Query**: `count({ "step": 0 })` reads current status without incrementing.
    - **Multi-Counter**: Optional `name` parameter supports concurrent named counters (defaults to `"default"`).
    - **Completion Guard**: Stepping after completion returns `"Your counter has finished, move on."`.
 
@@ -123,7 +123,7 @@ While maintaining protocol-level compatibility with the reference TypeScript ser
 | **Nullable JSON Schema** | Uses TypeScript/Zod schema conventions | Generates portable `anyOf: [T, null]` schemas to ensure broad client compatibility |
 | **Revision / Branch Validation** | Flexible / permissive runtime checks | Enforces relational constraints (e.g., revisions and branch origins must reference existing history) |
 | **Logging Output** | Formatted ASCII boxes to `console.error` | Traditional, width-independent log output to `stderr` |
-| **Iterated Task Counting** | Not supported | Dedicated lightweight `counter` tool |
+| **Iterated Task Counting** | Not supported | Dedicated lightweight `count` tool |
 
 ---
 
